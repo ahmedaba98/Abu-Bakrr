@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Study</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background-image:url("Ai.png");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+    color:white;
+    text-align:center;
+}
+
+/* تغميق الخلفية */
+body::before{
+    content:"";
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    z-index:-1;
+}
+
+h1{
+    color:#ffd166;
+    margin-top:30px;
+}
+
+.subtitle{
+    color:#bcdffb;
+}
+
+.container{
+    max-width:800px;
+    margin:auto;
+    padding:20px;
+}
+
+/* الكارد */
+.card{
+    background: rgba(255,255,255,0.18);
+    margin-bottom:35px;
+    padding:22px;
+    border-radius:18px;
+    max-width:400px;
+    margin-left:auto;
+    margin-right:auto;
+
+    opacity:0;
+    transform:translateY(40px);
+    transition:0.7s ease;
+}
+
+/* ظهور الكارد */
+.card.show{
+    opacity:1;
+    transform:translateY(0);
+}
+
+/* عنوان الكارد */
+.card h3{
+    color:#ffd166;
+}
+
+/* الأزرار */
+button{
+    padding:12px 18px;
+    border:none;
+    border-radius:30px;
+    background:linear-gradient(45deg,#00c3ff,#0088ff);
+    color:white;
+    cursor:pointer;
+    margin-top:10px;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+input, select{
+    padding:10px;
+    width:85%;
+    border-radius:10px;
+    border:none;
+    margin-top:12px;
+}
+
+#aiAnswer,#result,#adviceResult,#planResult{
+    margin-top:15px;
+    color:#ffd166;
+    font-weight:bold;
+}
+
+.grade-section{
+    background: rgba(0,0,0,0.35);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Smart Study</h1>
+<p class="subtitle">المذاكرة باستخدام الذكاء الاصطناعي</p>
+
+<div class="container">
+
+<div class="card">
+<h3>الذكاء الاصطناعي</h3>
+<p>يساعدك في الشرح والتلخيص وحل الأسئلة.</p>
+<button onclick="openAI()">💡 اسأل الذكاء الاصطناعي</button>
+<p id="aiAnswer"></p>
+</div>
+
+<div class="card">
+<h3>أدوات المذاكرة</h3>
+<p>تنظيم الوقت وتحسين الفهم.</p>
+</div>
+
+<div class="card">
+<h3>النصائح المهمة</h3>
+<p>استخدم الذكاء الاصطناعي كمساعد فقط في المذاكرة.</p>
+</div>
+
+<div class="card">
+<h3>تواصل معنا</h3>
+<p>للمساعدة والاستفسار.</p>
+</div>
+
+</div>
+
+<h2 style="color:#ffd166;">📚 تقييم المواد الدراسية</h2>
+
+<div class="card grade-section" style="opacity:1; transform:none;">
+
+<p>اختر المادة:</p>
+
+<select id="subject">
+<option>اللغة العربية</option>
+<option>الرياضيات</option>
+<option>اللغة الإنجليزية</option>
+<option>التاريخ</option>
+<option>الجغرافيا</option>
+<option>العلوم</option>
+<option>الفلسفة</option>
+</select>
+
+<br><br>
+
+<p>اكتب درجتك:</p>
+<input type="number" id="grade" placeholder="اكتب الدرجة">
+
+<br><br>
+
+<button onclick="evaluateGrade()">تقييم</button>
+
+<p id="result"></p>
+
+</div>
+
+<br>
+
+<h2 style="color:#ffd166;">📖 نصائح حسب المادة</h2>
+
+<div class="card" style="opacity:1; transform:none;">
+
+<select id="adviceSubject">
+<option>اللغة العربية</option>
+<option>الرياضيات</option>
+<option>اللغة الإنجليزية</option>
+<option>التاريخ</option>
+<option>الجغرافيا</option>
+<option>العلوم</option>
+<option>الفلسفة</option>
+</select>
+
+<br><br>
+
+<button onclick="giveAdvice()">اعطني نصيحة</button>
+
+<p id="adviceResult"></p>
+
+</div>
+
+<br>
+
+<h2 style="color:#ffd166;">📖 خطة مذاكرة ذكية</h2>
+
+<div class="card" style="opacity:1; transform:none;">
+
+<select id="planSubject">
+<option>اللغة العربية</option>
+<option>الرياضيات</option>
+<option>اللغة الإنجليزية</option>
+<option>التاريخ</option>
+<option>الجغرافيا</option>
+<option>العلوم</option>
+<option>الفلسفة</option>
+</select>
+
+<br><br>
+
+<input type="number" id="studyTime" placeholder="مدة المذاكرة بالدقائق">
+
+<br><br>
+
+<button onclick="generatePlan()">إنشاء الخطة</button>
+
+<p id="planResult"></p>
+
+</div>
+
+<script>
+
+function openAI(){
+
+    let tips=[
+        "📖 قسم المذاكرة على فترات قصيرة.",
+        "🧠 اسألني أسئلة عن الدرس.",
+        "✏️ حل تمارين بعد كل جزء.",
+        "🌙 راجع قبل النوم."
+    ];
+
+    document.getElementById("aiAnswer").innerHTML =
+    tips[Math.floor(Math.random()*tips.length)];
+}
+
+function evaluateGrade(){
+
+    let grade=document.getElementById("grade").value;
+    let result=document.getElementById("result");
+
+    if(grade===""){
+        result.innerHTML="اكتب الدرجة أولاً";
+        return;
+    }
+
+    grade=Number(grade);
+
+    if(grade>=85){
+        result.innerHTML="🔥 ممتاز جدًا";
+    }
+    else if(grade>=70){
+        result.innerHTML="👍 جيد جدًا";
+    }
+    else if(grade>=50){
+        result.innerHTML="📚 حاول تذاكر أكثر";
+    }
+    else{
+        result.innerHTML="❤️ مع المذاكرة ستتحسن";
+    }
+}
+
+function giveAdvice(){
+
+    let subject=document.getElementById("adviceSubject").value;
+    let result=document.getElementById("adviceResult");
+
+    let advice="";
+
+    switch(subject){
+
+        case "اللغة العربية":
+            advice="📚 اقرأ النص وافهم الفكرة قبل الحفظ.";
+            break;
+
+        case "الرياضيات":
+            advice="✏️ حل مسائل كثيرة مع فهم الخطوات.";
+            break;
+
+        case "اللغة الإنجليزية":
+            advice="🧠 حاول سماع الكلمات بصوت مرتفع.";
+            break;
+
+        case "التاريخ":
+            advice="📖 اربط الأحداث ببعضها.";
+            break;
+
+        case "الجغرافيا":
+            advice="🌍 استخدم الخرائط.";
+            break;
+
+        case "العلوم":
+            advice="🔬 افهم التجربة قبل الحفظ.";
+            break;
+
+        case "الفلسفة":
+            advice="🤔 حاول فهم المعنى.";
+            break;
+    }
+
+    result.innerHTML=advice;
+}
+
+function generatePlan(){
+
+    let time=document.getElementById("studyTime").value;
+    let result=document.getElementById("planResult");
+
+    if(time===""){
+        result.innerHTML="اكتب الوقت أولاً";
+        return;
+    }
+
+    time=Number(time);
+
+    if(time<20){
+        result.innerHTML="📚 ذاكر بهدوء لمدة "+time+" دقيقة.";
+    }
+    else{
+        result.innerHTML="✏️ قسم الوقت إلى "+Math.floor(time/2)+" دقيقة مذاكرة + راحة.";
+    }
+}
+
+const cards=document.querySelectorAll(".card");
+
+function revealCards(){
+    cards.forEach(card=>{
+        let top=card.getBoundingClientRect().top;
+        let height=window.innerHeight;
+
+        if(top < height - 100){
+            card.classList.add("show");
+        }
+    });
+}
+
+window.addEventListener("scroll",revealCards);
+revealCards();
+
+</script>
+<br><br>
+
+<div style="
+background:rgba(0,0,0,0.4);
+padding:15px;
+color:#bcdffb;
+font-size:14px;
+">
+
+Smart Study © 2025  
+الموقع يساعدك في المذاكرة باستخدام الذكاء الاصطناعي
+
+</div>
+
+</body>
+</html>
